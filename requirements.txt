@@ -1,4 +1,4 @@
 discord
 asyncio
 youtube_dl
-dotenv
+python-dotenv

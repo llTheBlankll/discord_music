@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python3
 import os
 import discord
 import threading
@@ -10,14 +10,20 @@ import sys
 
 from dotenv import load_dotenv
 from discord.ext import commands
+from youtube_dl.utils import DownloadError
 
 # Load .env files.
 load_dotenv()
 
+
 client = commands.Bot(command_prefix="!")
 
+
+# ! CONFIGURATION
 class mainvariables():
     # * STRINGS * #
+    working_directory = "/home/nytri/Documents/Python/discord_music"
+    """ A place where pwd or the script location."""
     music_base_dir = "/home/nytri/Music/fav"
     """Base directory for musics."""
     musics = os.listdir("/home/nytri/Music/fav")
@@ -121,17 +127,15 @@ class connection():
         if await self.checkIfBotVoiceChannelConnected():
             if not await self.checkIfBotVoiceChannelConnected():
                 try:
-                    await discord.utils.get(self.ctx.guild.voice_channels, name="Music").connect()
-                    await discord.utils.get(discord.voice_client, guild=self.ctx.guild).connect()
+                    discord.utils.get(self.ctx.guild.voice_channels, name="Music").connect()
+                    discord.utils.get(discord.voice_client, guild=self.ctx.guild).connect()
                 except discord.ClientException:
-                    pass
-                return True
+                    return True
             else:
                 try:
                     await discord.utils.get(self.ctx.guild.voice_channels, name="Music").connect()
                 except discord.ClientException:
-                    pass
-                return True
+                    return True
         else:
             await self.ctx.send("Returns False")
             return False                      
@@ -161,7 +165,8 @@ class connection():
         if await self.checkIfBotVoiceChannelConnected():
             return discord.utils.get(client.voice_clients, guild=self.ctx.guild)
         else:
-            return None
+            await self.connectVoiceChat()
+            return discord.utils.get(client.voice_clients, guild=self.ctx.guild)
     
     async def reconnectBotVoice(self):
         """Reconnect the bot to the voice channel and voice chat
@@ -192,6 +197,7 @@ class discord_Music():
             * If the filename arguments is Music.mp3 then the name of the music will be Music. It will remove the extension at the end.
         """
         voice = await self.con.getBotVoiceChat()
+        await self.con.connectAll()
         if voice:
             mainvars.music_playing = str(name)
             mainvars.music_playing_fullpath = str(filename)
@@ -262,7 +268,6 @@ class redirector():
     async def random(self):
         """Shuffle all music in list of mainvars.musics list.
         """
-        await self.con.connectAll()
         if await self.con.checkIfBotVoiceChannelConnected():
             voice = await self.con.getBotVoiceChat()
             # * Add the music id's to the list.
@@ -273,7 +278,17 @@ class redirector():
             mainvars.shuffled_music_ids = random.sample(ids, k=len(mainvars.musics) -1)
             i = random.sample(mainvars.shuffled_music_ids, k=1)
             await self.discordMusic.play("{}/{}".format(mainvars.music_base_dir, mainvars.musics[i[0]]), mainvars.musics[i[0]])
-            
+        else:
+            await self.con.connectAll()
+            voice = await self.con.getBotVoiceChat()
+            # * Add the music id's to the list.
+            ids = []
+            for id in range(1, len(mainvars.musics)):
+                ids.append(id)
+            # * Shuffle music id's
+            mainvars.shuffled_music_ids = random.sample(ids, k=len(mainvars.musics) -1)
+            i = random.sample(mainvars.shuffled_music_ids, k=1)
+            await self.discordMusic.play("{}/{}".format(mainvars.music_base_dir, mainvars.musics[i[0]]), mainvars.musics[i[0]])
 
     
     async def stop(self):
@@ -386,6 +401,13 @@ async def music_sel(ctx, id: int):
 @client.command()
 @commands.has_any_role("administrators")
 async def music_youtube(ctx, url: str):
+    m = redirector(ctx)
+    c = connection(ctx)
+    discordMusic = discord_Music(ctx)
+    
+    # * Send downloading message to notify user that their command is processing.
+    await ctx.send("Downloading...")
+    
     # * Set youtubedl headers
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -395,17 +417,50 @@ async def music_youtube(ctx, url: str):
             'preferredquality': '192',
         }],
     }
-    yt_title = str()
-    yt_id = str()
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([str(url)])
-        infos = ydl.extract_info([str(url)])
-        yt_title = infos.get("title")
-        yt_id = infos.get("id")
-    await ctx.send("%s : %s" % (yt_title, yt_id)) 
-
+    yt_title = str().encode("utf-8") # Youtube Title
     
-print("Bot %s successfully logged in." % client.user)
+    # * Download the audio file and set the variables like yt_title
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        try:
+            ydl.download([str(url)])
+            infos = ydl.extract_info(str(url), download=False)
+            yt_title = infos.get("title")
+        except youtube_dl.DownloadError:
+            await ctx.send("Invalid Youtube URL")
+        
+    # Search for the downloaded audio file.
+    # Do not mix the directory with other .mp3 files to avoid error.
+    for files in os.listdir("./"):
+        if files.endswith(".mp3"):
+            # * Where is the location of the downloaded media file is?
+            pwd = subprocess.Popen(["/usr/bin/pwd"], stdout=subprocess.PIPE)
+            out, err = pwd.communicate()
+            
+            # Decoding output of the command because the type of variable is bytes not string.
+            out = out.decode("utf-8").strip()
+
+            # * Using subprocess to rename instead of os.rename because the os.rename can't properly handle the other language filename like japanese.
+            # * Replace slash (/) because they are the cause of error. The program treat it as another directory or file. So it raises error like File Not Found.
+            yt_title = yt_title.replace("/", "")
+            subprocess.run(["/usr/bin/mv", "{}/{}".format(out, files), "{}/{}.mp3".format(mainvars.music_base_dir, yt_title)])
+
+
+    # Notify the user that the link he/she provided is now playing.
+    await ctx.send("Playing %s" % (yt_title))
+    
+    # Check if the music is connected to the discord channel.
+    if c.checkIfBotVoiceChannelConnected():
+        # Play the music.
+        await discordMusic.play("{}/{}.mp3".format(mainvars.music_base_dir, yt_title), yt_title)
+    else:
+        # If not connected then connect to the channel.
+        await c.connectAll()
+        await discordMusic.play("{}/{}.mp3".format(mainvars.music_base_dir, yt_title), yt_title)
+    # Notify the user that the music he/she provided has been added the library.
+    await ctx.send("%s added to Library" % yt_title)
+
+
+print("Bot successfully logged in.")
 
 
 # * CHANGE IT TO YOUR BOT TOKEN.
