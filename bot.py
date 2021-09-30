@@ -58,15 +58,9 @@ class connection():
         try:
             if discord.utils.get(self.ctx.guild.voice_channels, name="Music"):
                 return True
-<<<<<<< HEAD
-            else:
-                self.ctx.send("Bot Voice Channel function returns false")
-                return False
-=======
 
             self.ctx.send("Bot Voice Channel function returns false")
             return False
->>>>>>> ba13695 (optimized)
         except discord.ClientException:
             return True
     
@@ -79,22 +73,12 @@ class connection():
         voice = discord.utils.get(client.voice_clients, guild=self.ctx.guild)
         if voice == None:
             return False
-<<<<<<< HEAD
-        else:
-            if voice.is_connected():
-                return True
-            else:
-                return False
-        
-    
-=======
 
         if voice.is_connected():
             return True
             
         return False
 
->>>>>>> ba13695 (optimized)
     async def checkVoiceConnections(self):
         """Check if the bot is already connected to the VOICE CHANNEL and VOICE CHAT.
         if not then returns False.
@@ -107,16 +91,6 @@ class connection():
             voice = discord.utils.get(client.voice_clients, guild=self.ctx.guild)
             if voice == None:
                 return False
-<<<<<<< HEAD
-            else:
-                return True
-        else:
-            await self.ctx.send("Bot not connected to channel.")
-            return False
-        
-    async def connectVoiceChat(self):
-        """Connect the bot to the VOICE CHAT. If the bot is not connected to the VOICE CHAT 
-=======
 
             return True
         
@@ -126,7 +100,6 @@ class connection():
         
     async def connectVoiceChat(self):
         """Connect the bot to the VOICE CHAT. If the bot is not connected to the VOICE CHAT
->>>>>>> ba13695 (optimized)
         then the function will use discord library to connect to the VOICE CHAT\n
         \n
         If the bot is already connected to the VOICE CHAT then the function will pass.
@@ -136,16 +109,8 @@ class connection():
         if not self.checkifBotVoiceConnected:
             if discord.utils.get(client.voice_clients, guild=self.ctx.guild).connect():
                 return True
-<<<<<<< HEAD
-            else:
-                return False
-        else:
-            pass
-            
-=======
 
         return False    
->>>>>>> ba13695 (optimized)
         
     async def connectAll(self):
         """Connect the bot to the Music Channel.
@@ -183,17 +148,10 @@ class connection():
         if voice_channel:
             await voice_channel.connect()
             return True
-<<<<<<< HEAD
-        else:
-            # * Connect to voice channel.
-            #  await voice_channel.connect()
-            return False
-=======
         
         # * Connect to voice channel.
         #  await voice_channel.connect()
         return False
->>>>>>> ba13695 (optimized)
         
     async def getBotVoiceChat(self):
         """Return the VOICE CHAT object.
@@ -203,15 +161,9 @@ class connection():
         """
         if await self.checkIfBotVoiceChannelConnected():
             return discord.utils.get(client.voice_clients, guild=self.ctx.guild)
-<<<<<<< HEAD
-        else:
-            await self.connectVoiceChat()
-            return discord.utils.get(client.voice_clients, guild=self.ctx.guild)
-=======
         
         await self.connectVoiceChat()
         return discord.utils.get(client.voice_clients, guild=self.ctx.guild)
->>>>>>> ba13695 (optimized)
     
     async def reconnectBotVoice(self):
         """Reconnect the bot to the voice channel and voice chat
@@ -268,13 +220,8 @@ class discord_Music():
         if voice.is_playing():
             voice.stop()
             return True
-<<<<<<< HEAD
-        else:
-            return False
-=======
         
         return False
->>>>>>> ba13695 (optimized)
     
     async def pause(self):
         """Pause the music playing.
@@ -289,13 +236,8 @@ class discord_Music():
             else:
                 voice.pause()
                 return True
-<<<<<<< HEAD
-        else:
-            return False
-=======
         
         return False
->>>>>>> ba13695 (optimized)
     
     async def resume(self):
         """Resume music paused by the user
@@ -306,21 +248,12 @@ class discord_Music():
         voice = await self.con.getBotVoiceChat()
         if voice.is_playing():
             return False
-<<<<<<< HEAD
-        else:
-            if voice.is_paused():
-                voice.resume()
-                return True
-            else:
-                return False
-=======
         
         if voice.is_paused():
             voice.resume()
             return True
         else:
             return False
->>>>>>> ba13695 (optimized)
         
 
 class redirector():
@@ -339,11 +272,7 @@ class redirector():
             for id in range(1, len(mainvars.musics)):
                 ids.append(id)
             # * Shuffle music id's
-<<<<<<< HEAD
-            mainvars.shuffled_music_ids = random.sample(ids, k=len(mainvars.musics) -1)
-=======
             mainvars.shuffled_music_ids = random.sample(ids, k=len(mainvars.musics) - 1)
->>>>>>> ba13695 (optimized)
             i = random.sample(mainvars.shuffled_music_ids, k=1)
             await self.discordMusic.play("{}/{}".format(mainvars.music_base_dir, mainvars.musics[i[0]]), mainvars.musics[i[0]])
         else:
@@ -354,11 +283,7 @@ class redirector():
             for id in range(1, len(mainvars.musics)):
                 ids.append(id)
             # * Shuffle music id's
-<<<<<<< HEAD
-            mainvars.shuffled_music_ids = random.sample(ids, k=len(mainvars.musics) -1)
-=======
             mainvars.shuffled_music_ids = random.sample(ids, k=len(mainvars.musics) - 1)
->>>>>>> ba13695 (optimized)
             i = random.sample(mainvars.shuffled_music_ids, k=1)
             await self.discordMusic.play("{}/{}".format(mainvars.music_base_dir, mainvars.musics[i[0]]), mainvars.musics[i[0]])
 
@@ -428,30 +353,21 @@ async def music_pause(ctx):
     m = redirector(ctx)
     await m.pause()
 
-<<<<<<< HEAD
-=======
 
->>>>>>> ba13695 (optimized)
 @client.command()
 @commands.has_any_role("administrators")
 async def music_resume(ctx):
     m = redirector(ctx)
     await m.resume()
 
-<<<<<<< HEAD
-=======
 
->>>>>>> ba13695 (optimized)
 @client.command()
 @commands.has_any_role("administrators")
 async def music_restart(ctx):
     m = redirector(ctx)
     await m.restart()
 
-<<<<<<< HEAD
-=======
 
->>>>>>> ba13695 (optimized)
 @client.command(pass_context=True)
 @commands.has_any_role("administrators")
 async def music_list(ctx):
@@ -488,11 +404,7 @@ async def music_youtube(ctx, url: str):
     m = redirector(ctx)
     c = connection(ctx)
     discordMusic = discord_Music(ctx)
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> ba13695 (optimized)
     # * Send downloading message to notify user that their command is processing.
     await ctx.send("Downloading...")
     
@@ -552,8 +464,4 @@ print("Bot successfully logged in.")
 
 
 # * CHANGE IT TO YOUR BOT TOKEN.
-<<<<<<< HEAD
 client.run(os.environ["TOKEN"])
-=======
-client.run(os.environ["TOKEN"])
->>>>>>> ba13695 (optimized)
