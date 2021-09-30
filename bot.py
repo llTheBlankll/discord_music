@@ -233,9 +233,9 @@ class discord_Music():
         if voice.is_playing():
             if voice.is_paused():
                 return False
-            else:
-                voice.pause()
-                return True
+
+            voice.pause()
+            return True
         
         return False
     
@@ -252,8 +252,8 @@ class discord_Music():
         if voice.is_paused():
             voice.resume()
             return True
-        else:
-            return False
+        
+        return False
         
 
 class redirector():
