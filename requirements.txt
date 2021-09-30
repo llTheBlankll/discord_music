@@ -1,4 +1,0 @@
-discord
-asyncio
-youtube_dl
-python-dotenv
