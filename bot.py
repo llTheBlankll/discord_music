@@ -1,16 +1,13 @@
 #!/bin/python3
 import os
 import discord
-import threading
 import random
-import asyncio
 import youtube_dl
 import subprocess
 import sys
 
 from dotenv import load_dotenv
 from discord.ext import commands
-from youtube_dl.utils import DownloadError
 
 # Load .env files.
 load_dotenv()
@@ -66,7 +63,6 @@ class connection():
     
     async def checkifBotVoiceConnected(self):
         """Check if the bot is connected to the VOICE CHAT.
-
         Returns:
             Boolean: If the bot is not connected to the VOICE CHAT then return False.
         """
@@ -80,7 +76,8 @@ class connection():
         return False
 
     async def checkVoiceConnections(self):
-        """Check if the bot is already connected to the VOICE CHANNEL and VOICE CHAT.
+        """
+        Check if the bot is already connected to the VOICE CHANNEL and VOICE CHAT.
         if not then returns False.
         if yes then returns True.
 
@@ -99,9 +96,10 @@ class connection():
             
         
     async def connectVoiceChat(self):
-        """Connect the bot to the VOICE CHAT. If the bot is not connected to the VOICE CHAT
-        then the function will use discord library to connect to the VOICE CHAT\n
-        \n
+        """
+        Connect the bot to the VOICE CHAT. If the bot is not connected to the VOICE CHAT
+        then the function will use discord library to connect to the VOICE CHAT
+
         If the bot is already connected to the VOICE CHAT then the function will pass.
         Returns:
             Boolean: Returns True if the bot managed to connect to the VOICE CHAT else returns False.
@@ -109,11 +107,11 @@ class connection():
         if not self.checkifBotVoiceConnected:
             if discord.utils.get(client.voice_clients, guild=self.ctx.guild).connect():
                 return True
-
         return False    
         
     async def connectAll(self):
-        """Connect the bot to the Music Channel.
+        """
+        Connect the bot to the Music Channel.
         Automatically checks if the bot is already connected to the channel.
 
         Returns:
@@ -139,7 +137,8 @@ class connection():
                 
         
     async def connectBotVoiceChannel(self):
-        """Connect the bot to the Voice Channel.
+        """
+        Connect the bot to the Voice Channel.
 
         Returns:
             Boolean: If the bot managed to connect to the voice channel then returns True.
@@ -263,21 +262,20 @@ class redirector():
         self.discordMusic = discord_Music(ctx)
 
     async def random(self):
-        """Shuffle all music in list of mainvars.musics list.
-        """
+        # Shuffle all music in list of mainvars.musics list.
         if await self.con.checkIfBotVoiceChannelConnected():
-            voice = await self.con.getBotVoiceChat()
+            await self.con.getBotVoiceChat()
             # * Add the music id's to the list.
             ids = []
-            for id in range(1, len(mainvars.musics)):
-                ids.append(id)
+            for music_id in range(1, len(mainvars.musics)):
+                ids.append(music_id)
             # * Shuffle music id's
             mainvars.shuffled_music_ids = random.sample(ids, k=len(mainvars.musics) - 1)
             i = random.sample(mainvars.shuffled_music_ids, k=1)
             await self.discordMusic.play("{}/{}".format(mainvars.music_base_dir, mainvars.musics[i[0]]), mainvars.musics[i[0]])
         else:
             await self.con.connectAll()
-            voice = await self.con.getBotVoiceChat()
+            await self.con.getBotVoiceChat()
             # * Add the music id's to the list.
             ids = []
             for id in range(1, len(mainvars.musics)):
@@ -300,7 +298,7 @@ class redirector():
             await self.ctx.send("No music playing.")
     
     async def pause(self):
-        """Pause the music currently playing"""
+        # Pause the music currently playing
         if await self.con.checkifBotVoiceConnected():
             if await self.discordMusic.pause():
                 pass
@@ -320,7 +318,7 @@ class redirector():
             await self.ctx.send("No music playing.")
             
     async def restart(self):
-        """Restart the music currently playing"""
+        # Restart the music currently playing
         if await self.con.checkifBotVoiceConnected():
             if mainvars.music_playing == "" and mainvars.music_playing_fullpath == "":
                 await self.ctx.send("No music currently playing.")
@@ -385,13 +383,13 @@ async def music_list(ctx):
 
 @client.command()
 @commands.has_any_role("administrators")
-async def music_sel(ctx, id: int):
-    m = redirector(ctx)
+async def music_sel(ctx, music_id: int):
+    redirector(ctx)
     discordMusic = discord_Music(ctx)
     con = connection(ctx)
     
-    music_name = mainvars.musics[id - 1]
-    music_full_path = "{}/{}".format(mainvars.music_base_dir, mainvars.musics[id - 1])
+    music_name = mainvars.musics[music_id - 1]
+    music_full_path = "{}/{}".format(mainvars.music_base_dir, mainvars.musics[music_id - 1])
     # * Ensure that the bot is connected to the music channel.
     await con.connectAll()
     if await con.checkIfBotVoiceChannelConnected():
@@ -434,7 +432,7 @@ async def music_youtube(ctx, url: str):
         if files.endswith(".mp3"):
             # * Where is the location of the downloaded media file is?
             pwd = subprocess.Popen(["/usr/bin/pwd"], stdout=subprocess.PIPE)
-            out, err = pwd.communicate()
+            out = pwd.communicate()
             
             # Decoding output of the command because the type of variable is bytes not string.
             out = out.decode("utf-8").strip()
